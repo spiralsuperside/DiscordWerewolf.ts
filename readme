@@ -1,0 +1,38 @@
+sudo apt update
+sudo apt upgrade -y
+sudo reboot
+
+# You will be logged out. Wait a moment and log back into the server
+
+# Install dependencies
+sudo apt install -y ffmpeg git wget make g++
+
+# Install NVM. After install, exit and log back in to continue
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+
+# Install latest version of Node
+nvm install --lts
+
+# Clone project
+git clone https://github.com/TumoiYorozu/DiscordWerewolf.ts.git projects/DiscordWerewolf.ts
+
+cd projects/DiscordWerewolf.ts
+
+# Create swap file for installation
+# https://stackoverflow.com/a/71097715
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap  /swapfile
+sudo swapon /swapfile
+
+# Install app dependencies
+npm install -g @dotenvx/dotenvx
+npm install
+
+# Configure env vars
+
+# Compile to JS
+npx tsc
+
+
+# Run app
