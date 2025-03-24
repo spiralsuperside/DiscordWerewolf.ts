@@ -6,6 +6,7 @@ import {LangTypeFormat, LangType, RuleType, ServerSettingsFormat} from "./JsonTy
 import GameState from "./GameState"
 import {GameChannels, isThisCommand, loadAndSetSysRuleSet} from "./GameUtils"
 import {HttpServer} from "./HttpServer"
+import { Guild, Permissions, TextChannel, VoiceChannel } from 'discord.js';
 const JSON5 = require('json5');
 const util = require('util');
 
@@ -40,6 +41,7 @@ const Games: { [key: string]: GameState; } = {};
 
 clients[0].on("ready", () => {console.log("Login! ", clients[0].user ? clients[0].user.username : "");});
 clients[1].on("ready", () => {console.log("Login! ", clients[1].user ? clients[1].user.username : "");});
+
 
 const httpServer : HttpServer = new HttpServer(ServerSetting, SysLangTxt);
 
@@ -227,38 +229,76 @@ function getGameChannels2(ch : GameChannels, gch : Discord.GuildChannelManager) 
 }
 
 
-async function make_room(message : Discord.Message, SrvLangTxt : LangType){
-    // TODO : 未実装
-    const guild = message.guild;
-    if(guild == null) return;
+async function make_room(message: Discord.Message, SrvLangTxt: LangType) {
+    const guild: Guild | null = message.guild;
+    if (!guild) return;
 
-    message.channel.send(SrvLangTxt.p0.make_room)
-    const category_name = "game2"
-    let Werewolf    : Discord.TextChannel  | null = null;
-    let GameLog     : Discord.TextChannel  | null = null;
-    let DebugLog    : Discord.TextChannel  | null = null;
-    let Living      : Discord.TextChannel  | null = null;
-    let LivingVoice : Discord.VoiceChannel | null = null;
-    let Dead        : Discord.TextChannel  | null = null;
-    let DeadVoice   : Discord.VoiceChannel | null = null;
+    await message.channel.send(SrvLangTxt.p0.make_room);
 
-    const cat = await guild.channels.create(category_name,{type : 'GUILD_CATEGORY'});
-    Werewolf    = await guild.channels.create(SrvLangTxt.game.room_Werewolf   , {type : 'GUILD_TEXT',  parent : cat.id, position : 2});
-    GameLog     = await guild.channels.create(SrvLangTxt.game.room_GameLog    , {type : 'GUILD_TEXT',  parent : cat.id, position : 3});
-    DebugLog    = await guild.channels.create(SrvLangTxt.game.room_DebugLog   , {type : 'GUILD_TEXT',  parent : cat.id, position : 4});
-    Living      = await guild.channels.create(SrvLangTxt.game.room_Living     , {type : 'GUILD_TEXT',  parent : cat.id, position : 5});
-    LivingVoice = await guild.channels.create(SrvLangTxt.game.room_LivingVoice, {type : 'GUILD_VOICE', parent : cat.id, position : 6});
-    Dead        = await guild.channels.create(SrvLangTxt.game.room_Dead       , {type : 'GUILD_TEXT',  parent : cat.id, position : 7});
-    DeadVoice   = await guild.channels.create(SrvLangTxt.game.room_DeadVoice  , {type : 'GUILD_VOICE', parent : cat.id, position : 8});
-    return new GameChannels(
-        Werewolf   ,
-        GameLog    ,
-        DebugLog   ,
-        Living     ,
-        LivingVoice,
-        Dead       ,
-        DeadVoice
-    );
+    const category_name = "⭐ 人狼ゲーム";
+
+    let Werewolf: TextChannel | null = null;
+    let GameLog: TextChannel | null = null;
+    let DebugLog: TextChannel | null = null;
+    let Living: TextChannel | null = null;
+    let LivingVoice: VoiceChannel | null = null;
+    let Dead: TextChannel | null = null;
+    let DeadVoice: VoiceChannel | null = null;
+
+    const allowedRoles: string[] = [
+        "1347778787550433390",
+        "1351216161089654848",
+        "1351216402119266385"
+    ];
+
+    // Create category with correct permissions
+    const cat = await guild.channels.create(category_name, {
+        type: 'GUILD_CATEGORY',
+        permissionOverwrites: [
+            {
+                id: guild.roles.everyone.id, // Deny @everyone
+                deny: [Permissions.FLAGS.VIEW_CHANNEL]
+            },
+            ...allowedRoles.map(roleId => ({
+                id: roleId,
+                allow: [Permissions.FLAGS.VIEW_CHANNEL]
+            }))
+        ]
+    });
+
+    // Helper function to create channels with restricted permissions
+    async function createRestrictedChannel(name: string, type: 'GUILD_TEXT' | 'GUILD_VOICE', position: number) {
+        return await guild!.channels.create(name, {
+            type,
+            parent: cat.id,
+            position,
+            permissionOverwrites: [
+                {
+                    id: guild!.roles.everyone.id, // Deny @everyone
+                    deny: [Permissions.FLAGS.VIEW_CHANNEL]
+                },
+                ...allowedRoles.map(roleId => ({
+                    id: roleId,
+                    allow: [
+                        Permissions.FLAGS.VIEW_CHANNEL,
+                        ...(type === 'GUILD_TEXT' ? [Permissions.FLAGS.SEND_MESSAGES] : []),
+                        ...(type === 'GUILD_VOICE' ? [Permissions.FLAGS.CONNECT, Permissions.FLAGS.SPEAK] : [])
+                    ]
+                }))
+            ]
+        });
+    }
+
+    // Create text and voice channels
+    Werewolf    = await createRestrictedChannel(SrvLangTxt.game.room_Werewolf, 'GUILD_TEXT', 2) as TextChannel;
+    GameLog     = await createRestrictedChannel(SrvLangTxt.game.room_GameLog, 'GUILD_TEXT', 3) as TextChannel;
+    DebugLog    = await createRestrictedChannel(SrvLangTxt.game.room_DebugLog, 'GUILD_TEXT', 4) as TextChannel;
+    Living      = await createRestrictedChannel(SrvLangTxt.game.room_Living, 'GUILD_TEXT', 5) as TextChannel;
+    LivingVoice = await createRestrictedChannel(SrvLangTxt.game.room_LivingVoice, 'GUILD_VOICE', 6) as VoiceChannel;
+    Dead        = await createRestrictedChannel(SrvLangTxt.game.room_Dead, 'GUILD_TEXT', 7) as TextChannel;
+    DeadVoice   = await createRestrictedChannel(SrvLangTxt.game.room_DeadVoice, 'GUILD_VOICE', 8) as VoiceChannel;
+
+    return new GameChannels(Werewolf, GameLog, DebugLog, Living, LivingVoice, Dead, DeadVoice);
 }
 
 
@@ -276,10 +316,78 @@ async function on_message(bid : number, message : Discord.Message){
     if (message.content.startsWith('^ping')) {
         message.channel.send("pong!"); return;
     }
+    if (message.content.startsWith("^close")) {
+        const guild = message.guild;
+        if (!guild) return;
+
+        try {
+	    const allChannels = guild.channels.cache;
+            // Find the category that contains "人狼ゲーム"
+            allChannels.forEach(channel => {
+                if (channel.type === "GUILD_CATEGORY") {
+                console.log(`- ${channel.name} (ID: ${channel.id})`);
+                }
+            });
+    
+            const category = allChannels.find(
+                (channel): channel is Discord.CategoryChannel =>
+                    channel !== null &&
+                    channel.type === "GUILD_CATEGORY" &&
+                    typeof channel.name === "string" &&
+                    channel.name.includes("人狼ゲーム")
+            );
+
+            if (!category) {
+                message.channel.send("Category '⭐ 人狼ゲーム' not found.");
+                console.log(`Category "⭐ 人狼ゲーム" not found.`);
+                return;
+            }
+
+            // Fetch and delete all channels inside the category
+            const channelsToDelete = allChannels.filter(
+                (channel): channel is Discord.TextChannel | Discord.VoiceChannel =>
+                    channel !== null && channel.parentId === category.id
+            );
+
+            if (channelsToDelete.size === 0) {
+                message.channel.send("No channels found in category '⭐ 人狼ゲーム'.");
+                console.log(`No channels found in category "⭐ 人狼ゲーム"`);
+                return;
+            }
+
+            console.log(
+                "Filtered Channels in Category:",
+                [...channelsToDelete.values()].map((c) => c?.name || "Unknown")
+            );
+
+            for (const channel of channelsToDelete.values()) {
+                if (!channel) continue; // Ensure channel is not null before deleting
+                try {
+                    await channel.delete();
+                    //console.log(`Deleted channel: ${channel.name}`);
+                } catch (error) {
+                    console.error(`Failed to delete channel ${channel.name}:`, error);
+                }
+            }
+
+            // Optional: Delete the category itself after clearing its channels
+            try {
+                await category.delete();
+                //console.log(`Deleted category: ${category.name}`);
+            } catch (error) {
+                console.error(`Failed to delete category:`, error);
+            }
+        } catch (error) {
+            console.error(`Error in ^close function:`, error);
+        }
+        return;
+    }
     if(bid == 1) return;
     // console.log("text > ", message.content);
     
     const message_channel = message.channel;
+    console.log(SysLangTxt, SysRuleSet);
+    console.log(message_channel);
 
     if(SysLangTxt != null && SysRuleSet != null && ('parentId' in message_channel)){
         const SrvLangTxt : LangType = SysLangTxt;
@@ -292,14 +400,19 @@ async function on_message(bid : number, message : Discord.Message){
                 return;
             }
             const u = clients[0].user;
+	    console.log('a');
             if(message.guild && message.mentions.users.find(mu => mu.id == u.id)){
+		    console.log('b');
                 const guild1 = message.guild;
                 const ch = has_room_all_game_channel(paID, guild1.channels, SrvLangTxt)
                 if(ch != null){
+			console.log('c');
                     let guild2 = clients[1].guilds.cache.find(g => g.id == guild1.id);
                     if(guild2 != null){
+			    console.log('d');
                         const ch2 = getGameChannels2(ch, guild2.channels);
                         if(ch2 != null){
+				console.log('e');
                             Games[paID] = new GameState(clients, Games, message.guild, guild2, ch, ch2, paID, httpServer, SrvLangTxt, SrvRuleSet, ServerSetting);
                             ch.Living.send(SrvLangTxt.p0.rediscovered_room)
                             // console.trace("再認識");
@@ -316,25 +429,34 @@ async function on_message(bid : number, message : Discord.Message){
                 }
             }
         }
+	console.log('f');
         if(isThisCommand(message.content, SrvLangTxt.sys.cmd_make_room) >= 0){
+		console.log('g');
             const u = clients[0].user;
+	    console.log(message.mentions, u);
             if(message.mentions.users.find(mu => mu.id == u.id) == null) return;
+	    console.log('h');
             const guild1_old = message.guild;
             if (guild1_old == null) return;
+	    console.log('i');
             
             const ch = await make_room(message, SrvLangTxt);
             const guild1 = await guild1_old.fetch();
             if(guild1 == null) return;
+	    console.log('j');
             let guild2 = clients[1].guilds.cache.find(g => g.id == guild1.id);
             if(guild2 != null) guild2 = await guild2.fetch();
             if(ch == null || guild2 == null) return;
+	    console.log('k');
             const pa = ch.Living.parentId;
             const ch2 = getGameChannels2(ch, guild2.channels);
             if(pa == null || ch2 == null) return;
+	    console.log('l');
             Games[pa] = new GameState(clients, Games, guild1, guild2, ch, ch2, pa, httpServer, SrvLangTxt, SrvRuleSet, ServerSetting);
             Games[pa].updateRoomsRW();
             ch.Living.send("<@!" + message.author.id + "> done!");
             Games[pa].start_1Wanted();
+	    console.log('m');
             if(ServerSetting.auto_voice_link){
                 Games[pa].voiceChannelsLink();
             }
