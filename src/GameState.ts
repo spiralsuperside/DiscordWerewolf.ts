@@ -347,12 +347,11 @@ export default class GameState {
         }
         this.phase       = Phase.p0_UnStarted;
     }
-    destroy(){
+    destroy() {
         this.channels.Living.send(this.langTxt.p7.breakup);
         this.streams.destroy();
         this.httpServer.destroySession(this.httpGameState.sid);
     }
-
     resetServerSession(){
         let b :bigint = 0n;
         b += BigInt(Math.floor(Math.random()*65536)) * 0x1n;
@@ -561,97 +560,129 @@ export default class GameState {
             author: {name: "Error!", iconURL: "https://twemoji.maxcdn.com/2/72x72/1f6ab.png"},
         }]});
     }
-    updateRoomsRW(){
-        if(this.guild == null) return this.err();
-        let permGMonly      : Discord.OverwriteResolvable[] = [{id: this.guild.id, allow: NoAccess_alw, deny:  NoAccess_dny}];
-        let permReadOnly    : Discord.OverwriteResolvable[] = [{id: this.guild.id, allow: NoAccess_alw, deny:  NoAccess_dny}];
-        const cu1 = this.clients[0].user;
-        const cu2 = this.clients[1].user;
-        if (this.guild.me != null) {
-            addPerm(this.guild.me.id, Perm.Admin, permGMonly);
-            addPerm(this.guild.me.id, Perm.Admin, permReadOnly);
+
+    updateRoomsRW() {
+        if (this.guild == null) return this.err();
+
+        const eligible_role_ids: string[] = [
+            "1347778787550433390",
+            "1351216161089654848",
+            "1351216402119266385"
+        ];
+
+        const cu1 = this.clients?.[0]?.user || null;
+        const cu2 = this.clients?.[1]?.user || null;
+
+        let permGMonly: Discord.OverwriteResolvable[] = [{ id: this.guild.id, allow: NoAccess_alw, deny: NoAccess_dny }];
+        let permReadOnly: Discord.OverwriteResolvable[] = [{ id: this.guild.id, allow: NoAccess_alw, deny: NoAccess_dny }];
+
+        if (this.guild.members.me != null) {
+            addPerm(this.guild.members.me.id, Perm.Admin, permGMonly);
+            addPerm(this.guild.members.me.id, Perm.Admin, permReadOnly);
         }
 
         this.channels.DebugLog.permissionOverwrites.set(permGMonly);
-        this.channels.GameLog.permissionOverwrites.set(permReadOnly); // or permReadOnly
+        this.channels.GameLog.permissionOverwrites.set(permReadOnly);
 
-        let permLiving      : Discord.OverwriteResolvable[] = [];
-        let permLivingVoice : Discord.OverwriteResolvable[] = [];
-        let permDead        : Discord.OverwriteResolvable[] = [];
-        let permDeadVoice   : Discord.OverwriteResolvable[] = [];
-        let permWerewolf    : Discord.OverwriteResolvable[] = [];
+        let permLiving: Discord.OverwriteResolvable[] = [{ id: this.guild.id, allow: NoAccess_alw, deny: NoAccess_dny }];
+        let permLivingVoice: Discord.OverwriteResolvable[] = [{ id: this.guild.id, allow: NoAccess_alw, deny: NoAccess_dny }];
+        let permDead: Discord.OverwriteResolvable[] = [{ id: this.guild.id, allow: NoAccess_alw, deny: NoAccess_dny }];
+        let permDeadVoice: Discord.OverwriteResolvable[] = [{ id: this.guild.id, allow: NoAccess_alw, deny: NoAccess_dny }];
+        let permWerewolf: Discord.OverwriteResolvable[] = [{ id: this.guild.id, allow: NoAccess_alw, deny: NoAccess_dny }];
 
         switch (this.phase) {
             case Phase.p0_UnStarted:
             case Phase.p1_Wanted:
-                // for @everyone
-                addPerm(this.guild.id, Perm.RW      , permLiving     );
-                addPerm(this.guild.id, Perm.RW      , permLivingVoice);
-                addPerm(this.guild.id, Perm.ReadOnly, permDead       );
-                addPerm(this.guild.id, Perm.RW,       permDeadVoice  );
-                addPerm(this.guild.id, Perm.ViewOnly, permWerewolf   );
+                // Replace @everyone with eligible_role_ids
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.RW, permLiving);
+                    addPerm(roleId, Perm.RW, permLivingVoice);
+                    addPerm(roleId, Perm.ReadOnly, permDead);
+                    addPerm(roleId, Perm.RW, permDeadVoice);
+                    addPerm(roleId, Perm.ViewOnly, permWerewolf);
+                });
                 break;
+
+            case Phase.p1_Wanted:
+                // For p0_UnStarted and p1_Wanted, replace @everyone with eligible roles.
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.RW, permLiving);
+                    addPerm(roleId, Perm.RW, permLivingVoice);
+                    addPerm(roleId, Perm.ReadOnly, permDead);
+                    addPerm(roleId, Perm.RW, permDeadVoice);
+                    addPerm(roleId, Perm.ViewOnly, permWerewolf);
+                });
+                break;
+
             case Phase.p2_Preparation:
-                // for @everyone(Guest)
-                addPerm(this.guild.id, Perm.NoAccess, permWerewolf   );
-                addPerm(this.guild.id, Perm.ReadOnly, permLiving     );
-                addPerm(this.guild.id, Perm.ReadOnly, permLivingVoice);
-                addPerm(this.guild.id, Perm.NoAccess, permDead       );
-                addPerm(this.guild.id, Perm.ViewOnly, permDeadVoice  );
-                for(const uid in this.members) {
-                    addPerm(uid, Perm.RW,       permLiving);
+                // Guest default permissions for Preparation
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.NoAccess, permWerewolf);
+                    addPerm(roleId, Perm.ReadOnly, permLiving);
+                    addPerm(roleId, Perm.ReadOnly, permLivingVoice);
+                    addPerm(roleId, Perm.NoAccess, permDead);
+                    addPerm(roleId, Perm.ViewOnly, permDeadVoice);
+                });
+                // Override per-member settings
+                for (const uid in this.members) {
+                    addPerm(uid, Perm.RW, permLiving);
                     addPerm(uid, Perm.ReadOnly, permLivingVoice);
-                    addPerm(uid, Perm.NoAccess, permDead       );
-                    addPerm(uid, Perm.ViewOnly, permDeadVoice  );
-                    if(this.members[uid].allowWolfRoom){
+                    addPerm(uid, Perm.NoAccess, permDead);
+                    addPerm(uid, Perm.ViewOnly, permDeadVoice);
+                    if (this.members[uid].allowWolfRoom) {
                         addPerm(uid, Perm.ReadOnly, permWerewolf);
                     } else {
                         addPerm(uid, Perm.NoAccess, permWerewolf);
                     }
                 }
                 break;
+
             case Phase.p3_FirstNight:
-                // for @everyone(Guest)
-                addPerm(this.guild.id, Perm.NoAccess, permWerewolf   );
-                addPerm(this.guild.id, Perm.ReadOnly, permLiving     );
-                addPerm(this.guild.id, Perm.ReadOnly, permLivingVoice);
-                addPerm(this.guild.id, Perm.NoAccess, permDead       );
-                addPerm(this.guild.id, Perm.ViewOnly, permDeadVoice  );
-                for(const uid in this.members) {
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.NoAccess, permWerewolf);
+                    addPerm(roleId, Perm.ReadOnly, permLiving);
+                    addPerm(roleId, Perm.ReadOnly, permLivingVoice);
+                    addPerm(roleId, Perm.NoAccess, permDead);
+                    addPerm(roleId, Perm.ViewOnly, permDeadVoice);
+                });
+                for (const uid in this.members) {
                     addPerm(uid, Perm.ReadOnly, permLiving);
                     addPerm(uid, Perm.ReadOnly, permLivingVoice);
-                    addPerm(uid, Perm.NoAccess, permDead       );
-                    addPerm(uid, Perm.ViewOnly, permDeadVoice  );
-                    if(this.members[uid].allowWolfRoom){
-                        addPerm(uid, Perm.RW,       permWerewolf);
+                    addPerm(uid, Perm.NoAccess, permDead);
+                    addPerm(uid, Perm.ViewOnly, permDeadVoice);
+                    if (this.members[uid].allowWolfRoom) {
+                        addPerm(uid, Perm.RW, permWerewolf);
                     } else {
                         addPerm(uid, Perm.NoAccess, permWerewolf);
                     }
                 }
                 break;
+
             case Phase.p4_Daytime:
-                // for @everyone(Guest)
-                addPerm(this.guild.id, Perm.NoAccess, permWerewolf   );
-                addPerm(this.guild.id, Perm.ReadOnly, permLiving     );
-                addPerm(this.guild.id, Perm.ReadOnly, permLivingVoice);
-                addPerm(this.guild.id, Perm.NoAccess, permDead       );
-                addPerm(this.guild.id, Perm.ViewOnly, permDeadVoice  );
-                for(const uid in this.members) {
-                    if(this.members[uid].isLiving) {
-                        addPerm(uid, Perm.RW,       permLiving);
-                        addPerm(uid, Perm.RW,       permLivingVoice);
-                        addPerm(uid, Perm.NoAccess, permDead       );
-                        addPerm(uid, Perm.ViewOnly, permDeadVoice  );
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.NoAccess, permWerewolf);
+                    addPerm(roleId, Perm.ReadOnly, permLiving);
+                    addPerm(roleId, Perm.ReadOnly, permLivingVoice);
+                    addPerm(roleId, Perm.NoAccess, permDead);
+                    addPerm(roleId, Perm.ViewOnly, permDeadVoice);
+                });
+                for (const uid in this.members) {
+                    if (this.members[uid].isLiving) {
+                        addPerm(uid, Perm.RW, permLiving);
+                        addPerm(uid, Perm.RW, permLivingVoice);
+                        addPerm(uid, Perm.NoAccess, permDead);
+                        addPerm(uid, Perm.ViewOnly, permDeadVoice);
                     } else {
                         addPerm(uid, Perm.ReadOnly, permLiving);
                         addPerm(uid, Perm.ReadOnly, permLivingVoice);
-                        addPerm(uid, Perm.RW,       permDead       );
-                        addPerm(uid, Perm.RW,       permDeadVoice  );
+                        addPerm(uid, Perm.RW, permDead);
+                        addPerm(uid, Perm.RW, permDeadVoice);
                     }
-                    if(this.members[uid].allowWolfRoom){
+                    if (this.members[uid].allowWolfRoom) {
+                        // Daytime wolf room enabled flag can be toggled if needed.
                         const enableDaytimeWolfRoom = false;
-                        if(enableDaytimeWolfRoom && this.members[uid].isLiving) {
-                            addPerm(uid, Perm.RW,       permWerewolf);
+                        if (enableDaytimeWolfRoom && this.members[uid].isLiving) {
+                            addPerm(uid, Perm.RW, permWerewolf);
                         } else {
                             addPerm(uid, Perm.ReadOnly, permWerewolf);
                         }
@@ -660,63 +691,63 @@ export default class GameState {
                     }
                 }
                 break;
+
             case Phase.p5_Vote:
-                // for @everyone(Guest)
-                addPerm(this.guild.id, Perm.NoAccess, permWerewolf   );
-                addPerm(this.guild.id, Perm.ReadOnly, permLiving     );
-                addPerm(this.guild.id, Perm.ReadOnly, permLivingVoice);
-                addPerm(this.guild.id, Perm.NoAccess, permDead       );
-                addPerm(this.guild.id, Perm.ViewOnly, permDeadVoice  );
-                for(const uid in this.members) {
-                    if(this.members[uid].isLiving) {
-                        if(this.ruleSetting.vote.talk){
-                            addPerm(uid, Perm.RW,       permLiving);
-                            addPerm(uid, Perm.RW,       permLivingVoice);
-                        }else{
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.NoAccess, permWerewolf);
+                    addPerm(roleId, Perm.ReadOnly, permLiving);
+                    addPerm(roleId, Perm.ReadOnly, permLivingVoice);
+                    addPerm(roleId, Perm.NoAccess, permDead);
+                    addPerm(roleId, Perm.ViewOnly, permDeadVoice);
+                });
+                for (const uid in this.members) {
+                    if (this.members[uid].isLiving) {
+                        if (this.ruleSetting.vote.talk) {
+                            addPerm(uid, Perm.RW, permLiving);
+                            addPerm(uid, Perm.RW, permLivingVoice);
+                        } else {
                             addPerm(uid, Perm.ReadOnly, permLiving);
                             addPerm(uid, Perm.ReadOnly, permLivingVoice);
                         }
-                        addPerm(uid, Perm.NoAccess, permDead       );
-                        addPerm(uid, Perm.ViewOnly, permDeadVoice  );
+                        addPerm(uid, Perm.NoAccess, permDead);
+                        addPerm(uid, Perm.ViewOnly, permDeadVoice);
                     } else {
                         addPerm(uid, Perm.ReadOnly, permLiving);
                         addPerm(uid, Perm.ReadOnly, permLivingVoice);
-                        addPerm(uid, Perm.RW,       permDead       );
-                        addPerm(uid, Perm.RW,       permDeadVoice  );
+                        addPerm(uid, Perm.RW, permDead);
+                        addPerm(uid, Perm.RW, permDeadVoice);
                     }
-                    if(this.members[uid].allowWolfRoom){
-                        if(this.members[uid].isLiving) {
-                            addPerm(uid, Perm.ReadOnly, permWerewolf);
-                        } else {
-                            addPerm(uid, Perm.ReadOnly, permWerewolf);
-                        }
+                    if (this.members[uid].allowWolfRoom) {
+                        addPerm(uid, Perm.ReadOnly, permWerewolf);
                     } else {
                         addPerm(uid, Perm.NoAccess, permWerewolf);
                     }
                 }
                 break;
+
             case Phase.p6_Night:
-                // for @everyone(Guest)
-                addPerm(this.guild.id, Perm.NoAccess, permWerewolf   );
-                addPerm(this.guild.id, Perm.ReadOnly, permLiving     );
-                addPerm(this.guild.id, Perm.ReadOnly, permLivingVoice);
-                addPerm(this.guild.id, Perm.NoAccess, permDead       );
-                addPerm(this.guild.id, Perm.ViewOnly, permDeadVoice  );
-                for(const uid in this.members) {
-                    if(this.members[uid].isLiving) {
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.NoAccess, permWerewolf);
+                    addPerm(roleId, Perm.ReadOnly, permLiving);
+                    addPerm(roleId, Perm.ReadOnly, permLivingVoice);
+                    addPerm(roleId, Perm.NoAccess, permDead);
+                    addPerm(roleId, Perm.ViewOnly, permDeadVoice);
+                });
+                for (const uid in this.members) {
+                    if (this.members[uid].isLiving) {
                         addPerm(uid, Perm.ReadOnly, permLiving);
                         addPerm(uid, Perm.ReadOnly, permLivingVoice);
-                        addPerm(uid, Perm.NoAccess, permDead       );
-                        addPerm(uid, Perm.ViewOnly, permDeadVoice  );
+                        addPerm(uid, Perm.NoAccess, permDead);
+                        addPerm(uid, Perm.ViewOnly, permDeadVoice);
                     } else {
                         addPerm(uid, Perm.ReadOnly, permLiving);
                         addPerm(uid, Perm.ReadOnly, permLivingVoice);
-                        addPerm(uid, Perm.RW,       permDead       );
-                        addPerm(uid, Perm.RW,       permDeadVoice  );
+                        addPerm(uid, Perm.RW, permDead);
+                        addPerm(uid, Perm.RW, permDeadVoice);
                     }
-                    if(this.members[uid].allowWolfRoom){
-                        if(this.members[uid].isLiving) {
-                            addPerm(uid, Perm.RW,       permWerewolf);
+                    if (this.members[uid].allowWolfRoom) {
+                        if (this.members[uid].isLiving) {
+                            addPerm(uid, Perm.RW, permWerewolf);
                         } else {
                             addPerm(uid, Perm.ReadOnly, permWerewolf);
                         }
@@ -725,29 +756,35 @@ export default class GameState {
                     }
                 }
                 break;
+
             case Phase.p7_GameEnd:
-                // for @everyone(Guest)
-                addPerm(this.guild.id, Perm.ReadOnly, permWerewolf   );
-                addPerm(this.guild.id, Perm.RW,       permLiving     );
-                addPerm(this.guild.id, Perm.RW,       permLivingVoice);
-                addPerm(this.guild.id, Perm.ReadOnly, permDead       );
-                addPerm(this.guild.id, Perm.ViewOnly, permDeadVoice  );
+                eligible_role_ids.forEach(roleId => {
+                    addPerm(roleId, Perm.ReadOnly, permWerewolf);
+                    addPerm(roleId, Perm.RW, permLiving);
+                    addPerm(roleId, Perm.RW, permLivingVoice);
+                    addPerm(roleId, Perm.ReadOnly, permDead);
+                    addPerm(roleId, Perm.ViewOnly, permDeadVoice);
+                });
                 break;
+
             default:
                 assertUnreachable(this.phase);
         }
-        if (this.guild.me != null) {
-            addPerm(this.guild.me.id, Perm.Admin, permLiving     );
-            addPerm(this.guild.me.id, Perm.Admin, permLivingVoice);
-            addPerm(this.guild.me.id, Perm.Admin, permDead       );
-            addPerm(this.guild.me.id, Perm.Admin, permDeadVoice  );
-            addPerm(this.guild.me.id, Perm.Admin, permWerewolf   );
+
+        if (this.guild.members.me != null) {
+            addPerm(this.guild.members.me.id, Perm.Admin, permLiving);
+            addPerm(this.guild.members.me.id, Perm.Admin, permLivingVoice);
+            addPerm(this.guild.members.me.id, Perm.Admin, permDead);
+            addPerm(this.guild.members.me.id, Perm.Admin, permDeadVoice);
+            addPerm(this.guild.members.me.id, Perm.Admin, permWerewolf);
         }
-        this.channels.Living     .permissionOverwrites.set(permLiving     );
+
+        this.channels.Living.permissionOverwrites.set(permLiving);
         this.channels.LivingVoice.permissionOverwrites.set(permLivingVoice);
-        this.channels.Dead       .permissionOverwrites.set(permDead       );
-        this.channels.DeadVoice  .permissionOverwrites.set(permDeadVoice  );
-        this.channels.Werewolf   .permissionOverwrites.set(permWerewolf   );
+        this.channels.Dead.permissionOverwrites.set(permDead);
+        this.channels.DeadVoice.permissionOverwrites.set(permDeadVoice);
+        this.channels.Werewolf.permissionOverwrites.set(permWerewolf);
+
 
         const LiveID = this.channels.LivingVoice.id;
         const DeadID = this.channels.DeadVoice.id;
@@ -2886,5 +2923,5 @@ async function dummy_nightFinish(gid : number, obj : GameState){
 }
 
 async function dummy_gameEndFinish(gid : number, obj : GameState){
-    obj.gameEndFinish();
+    await obj.gameEndFinish();
 }
