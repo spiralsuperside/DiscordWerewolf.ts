@@ -26,8 +26,8 @@ sudo mkswap  /swapfile
 sudo swapon /swapfile
 
 # Install app dependencies
-npm install -g @dotenvx/dotenvx
-npm install
+sudo npm install -g @dotenvx/dotenvx
+sudo npm install
 
 # Configure env vars
 DISCORD_WEREWOLF_BOT_TOKEN_1=token1
@@ -44,5 +44,6 @@ add custom tcp 3000 rule to IPv4 Firewall (Networking)
 # Compile to JS
 npx tsc
 
+sudo npm install -g pm2
 
 # Run app
