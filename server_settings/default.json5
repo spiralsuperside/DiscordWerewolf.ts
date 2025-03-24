@@ -32,12 +32,12 @@
   },
 
   music :{
-    opening     : "_",
-    first_night : "_",
-    day_time    : "_",
-    vote        : "_",
-    night       : "_",
-    good_win    : "_",
-    evil_win    : "_",
+    opening     : "./media/BGMs/opening.mp3"",
+    first_night : "./media/BGMs/first_night.wav",
+    day_time    : "./media/BGMs/day.mp3",
+    vote        : "./media/BGMs/vote.mp3",
+    night       : "./media/BGMs/night.mp3",
+    good_win    : "./media/BGMs/good_win.mp3",
+    evil_win    : "./media/BGMs/evil_win.mp3",
   },
 }
