@@ -16,29 +16,29 @@
 
     first_night : {
         first_night_time : 60,
-        alert_times : [],
+        alert_times : [10],
     },
 
     day : {
         day_time       : 600,
         reduction_time :  60,
-        alert_times : [],
+        alert_times : [10,30,60],
         cut_time    : "majority",
     },
 
     night : {
         length      : 90,
-        alert_times : [],
+        alert_times : [10],
     },
 
     after_game : {
         length      : 3000,
-        alert_times : [],
+        alert_times : [10,30,60],
     },
 
     vote : {
         length      : 60,
-        alert_times : [],
+        alert_times : [10],
         talk        : false,
         place       : "after_open",
 
