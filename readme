@@ -30,6 +30,16 @@ npm install -g @dotenvx/dotenvx
 npm install
 
 # Configure env vars
+DISCORD_WEREWOLF_BOT_TOKEN_1=token1
+DISCORD_WEREWOLF_BOT_TOKEN_2=token2
+
+DISCORD_WEREWOLF_HTTP_ADDR= Ubuntu Server IP
+DISCORD_WEREWOLF_HTTP_IP= Ubuntu Server IP
+DISCORD_WEREWOLF_HTTP_PORT=3000
+DISCORD_WEREWOLF_SYSTEM_GM="MEMBER_ID_1 MEMBER_ID_2"
+
+add custom tcp 3000 rule to IPv4 Firewall (Networking)
+
 
 # Compile to JS
 npx tsc
