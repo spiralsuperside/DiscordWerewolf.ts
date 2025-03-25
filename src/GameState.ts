@@ -4,6 +4,8 @@ import {GameChannels, format, isThisCommand, assertUnreachable, shuffle, loadAnd
 import * as Util from "./GameUtils"
 import {LangType, RuleType, RolesStr, FortunePriestType, ServerSettingsType, RuleTypeFormat} from "./JsonType";
 import {HttpServer, HttpGameState} from "./HttpServer"
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const Phase = {
     p0_UnStarted   : '0.UnStarted',
@@ -564,12 +566,8 @@ export default class GameState {
     updateRoomsRW() {
         if (this.guild == null) return this.err();
 
-        const eligible_role_ids: string[] = [
-            "1347778787550433390",
-            "1351216161089654848",
-            "1351216402119266385"
-        ];
-
+        const allowedRoles = process.env.DISCORD_ALLOWED_ROLE_IDS?.split(" ") ?? [];
+        
         const cu1 = this.clients?.[0]?.user || null;
         const cu2 = this.clients?.[1]?.user || null;
 
