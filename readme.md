@@ -70,8 +70,12 @@ sudo rm /swapfile
 ## 📦 Install App Dependencies
 
 ```bash
-sudo npm install -g @dotenvx/dotenvx
 sudo npm install
+```
+
+Optional
+```bash
+sudo npm install -g @dotenvx/dotenvx
 ```
 
 ## 🔧 Install Dotenv (Similar to Dotenvx)
