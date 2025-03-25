@@ -9,7 +9,8 @@ import {HttpServer} from "./HttpServer"
 import { Guild, Permissions, TextChannel, VoiceChannel } from 'discord.js';
 const JSON5 = require('json5');
 const util = require('util');
-
+import dotenv from 'dotenv';
+dotenv.config();
 
 argv.option([
     {
@@ -245,11 +246,7 @@ async function make_room(message: Discord.Message, SrvLangTxt: LangType) {
     let Dead: TextChannel | null = null;
     let DeadVoice: VoiceChannel | null = null;
 
-    const allowedRoles: string[] = [
-        "1347778787550433390",
-        "1351216161089654848",
-        "1351216402119266385"
-    ];
+    const allowedRoles = process.env.DISCORD_ALLOWED_ROLE_IDS?.split(" ") ?? [];
 
     // Create category with correct permissions
     const cat = await guild.channels.create(category_name, {
