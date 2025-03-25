@@ -124,6 +124,11 @@ echo $DISCORD_WEREWOLF_BOT_TOKEN_1
 
 ---
 
+## 🔧 Install Dotenv
+```bash
+sudo npm install dotenv
+```
+
 ## 🔧 Compile to JavaScript
 
 ```bash
