@@ -67,50 +67,9 @@ sudo npm install -g @dotenvx/dotenvx
 sudo npm install
 ```
 
----
-
-## 🔐 Set Environment Variables
-
-Add these to your shell (temporary for now):
-
+## 🔧 Install Dotenv (Similar to Dotenvx)
 ```bash
-export DISCORD_WEREWOLF_BOT_TOKEN_1=your_token_1
-export DISCORD_WEREWOLF_BOT_TOKEN_2=your_token_2
-export DISCORD_WEREWOLF_HTTP_ADDR=your_server_ip
-export DISCORD_WEREWOLF_HTTP_IP=your_server_ip
-export DISCORD_WEREWOLF_HTTP_PORT=3000
-export DISCORD_WEREWOLF_SYSTEM_GM="MEMBER_ID_1 MEMBER_ID_2"
-```
-
----
-
-## 🛠 Persist Environment Variables (Using Bash)
-
-```bash
-nano ~/.bashrc
-```
-
-Scroll to the bottom and add:
-
-```bash
-export DISCORD_WEREWOLF_BOT_TOKEN_1=your_token_1
-export DISCORD_WEREWOLF_BOT_TOKEN_2=your_token_2
-export DISCORD_WEREWOLF_HTTP_ADDR=your_server_ip
-export DISCORD_WEREWOLF_HTTP_IP=your_server_ip
-export DISCORD_WEREWOLF_HTTP_PORT=3000
-export DISCORD_WEREWOLF_SYSTEM_GM="MEMBER_ID_1 MEMBER_ID_2"
-```
-
-Then apply changes:
-
-```bash
-source ~/.bashrc
-```
-
-✅ Verify:
-
-```bash
-echo $DISCORD_WEREWOLF_BOT_TOKEN_1
+sudo npm install dotenv
 ```
 
 ---
@@ -124,10 +83,6 @@ echo $DISCORD_WEREWOLF_BOT_TOKEN_1
 
 ---
 
-## 🔧 Install Dotenv
-```bash
-sudo npm install dotenv
-```
 
 ## 🔧 Compile to JavaScript
 
