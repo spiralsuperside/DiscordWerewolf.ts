@@ -1,11 +1,11 @@
 {
     game : {
-        room_Werewolf    : "人狼役職",
-        room_GameLog     : "ゲームログ",
-        room_DebugLog    : "デバッグログ",
-        room_Living      : "生存者チャット",
+        room_Werewolf    : "🐺｜人狼役職",
+        room_GameLog     : "📜｜ゲームログ",
+        room_DebugLog    : "🔍｜デバッグログ",
+        room_Living      : "❤️｜生存者チャット",
         room_LivingVoice : "生存者",
-        room_Dead        : "霊界チャット",
+        room_Dead        : "💀｜霊界チャット",
         room_DeadVoice   : "霊界"
     },
     sys : {
