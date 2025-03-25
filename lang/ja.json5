@@ -4,9 +4,9 @@
         room_GameLog     : "📜｜ゲームログ",
         room_DebugLog    : "🔍｜デバッグログ",
         room_Living      : "❤️｜生存者チャット",
-        room_LivingVoice : "生存者",
+        room_LivingVoice : "人狼生存者",
         room_Dead        : "💀｜霊界チャット",
-        room_DeadVoice   : "霊界"
+        room_DeadVoice   : "人狼霊界"
     },
     sys : {
         cmd_make_room     : ["make_room"],
