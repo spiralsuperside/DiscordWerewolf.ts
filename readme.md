@@ -1,76 +1,156 @@
-SETUP SERVER
-`sudo apt update
+# 🐺 Discord Werewolf Bot Server Setup (Ubuntu)
+
+## ⚙️ System Setup
+
+```bash
+sudo apt update
 sudo apt upgrade -y
-sudo reboot`
+sudo reboot
+```
 
-# You will be logged out. Wait a moment and log back into the server
+> ✅ You will be logged out. Wait a moment and log back into the server.
 
-# Install dependencies
-`sudo apt install -y ffmpeg git wget make g++`
+---
 
-# Install NVM. After install, exit and log back in to continue
-`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash`
+## 📦 Install Dependencies
 
-# Install latest version of Node
-`nvm install --lts`
+```bash
+sudo apt install -y ffmpeg git wget make g++
+```
 
-# Clone project
-``git clone https://github.com/TumoiYorozu/DiscordWerewolf.ts.git projects/DiscordWerewolf.ts
-cd projects/DiscordWerewolf.ts``
+---
 
-# Create swap file for installation
-# https://stackoverflow.com/a/71097715
-``sudo fallocate -l 4G /swapfile
+## 📥 Install NVM (Node Version Manager)
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+```
+
+> 🔁 After installation, exit and log back in to continue.
+
+---
+
+## 🟩 Install Latest Node.js LTS
+
+```bash
+nvm install --lts
+```
+
+---
+
+## 📁 Clone the Project
+
+```bash
+git clone https://github.com/spiralsuperside/DiscordWerewolf.ts.git projects/DiscordWerewolf.ts
+cd projects/DiscordWerewolf.ts
+```
+
+---
+
+## 🧠 Create a Swap File (for installation support)
+
+> 🔗 [Why? StackOverflow Answer](https://stackoverflow.com/a/71097715)
+
+```bash
+sudo fallocate -l 4G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap  /swapfile
-sudo swapon /swapfile``
+sudo swapon /swapfile
+```
 
-# Install app dependencies
-``sudo npm install -g @dotenvx/dotenvx
-sudo npm install``
+---
 
-# Configure env vars
+## 📦 Install App Dependencies
 
-DISCORD_WEREWOLF_BOT_TOKEN_1=token1
-DISCORD_WEREWOLF_BOT_TOKEN_2=token2
+```bash
+sudo npm install -g @dotenvx/dotenvx
+sudo npm install
+```
 
-DISCORD_WEREWOLF_HTTP_ADDR= Ubuntu Server IP
-DISCORD_WEREWOLF_HTTP_IP= Ubuntu Server IP
-DISCORD_WEREWOLF_HTTP_PORT=3000
-DISCORD_WEREWOLF_SYSTEM_GM="MEMBER_ID_1 MEMBER_ID_2"
+---
 
-🛠 If You're Using Bash (.bashrc)
-To permanently set your environment variable for your bot:
+## 🔐 Set Environment Variables
 
-Open your .bashrc file:
+Add these to your shell (temporary for now):
 
-`nano ~/.bashrc`
-Scroll to the bottom and add the following line (replace with your actual token):
+```bash
+export DISCORD_WEREWOLF_BOT_TOKEN_1=your_token_1
+export DISCORD_WEREWOLF_BOT_TOKEN_2=your_token_2
+export DISCORD_WEREWOLF_HTTP_ADDR=your_server_ip
+export DISCORD_WEREWOLF_HTTP_IP=your_server_ip
+export DISCORD_WEREWOLF_HTTP_PORT=3000
+export DISCORD_WEREWOLF_SYSTEM_GM="MEMBER_ID_1 MEMBER_ID_2"
+```
 
-`export DISCORD_WEREWOLF_BOT_TOKEN_1=your_real_token_here`
+---
 
-Save and exit the file:
+## 🛠 Persist Environment Variables (Using Bash)
 
-Press Ctrl + O, then Enter to save
-Press Ctrl + X to exit
+```bash
+nano ~/.bashrc
+```
 
-Apply the changes to your current shell session:
+Scroll to the bottom and add:
 
-`source ~/.bashrc`
+```bash
+export DISCORD_WEREWOLF_BOT_TOKEN_1=your_token_1
+export DISCORD_WEREWOLF_BOT_TOKEN_2=your_token_2
+export DISCORD_WEREWOLF_HTTP_ADDR=your_server_ip
+export DISCORD_WEREWOLF_HTTP_IP=your_server_ip
+export DISCORD_WEREWOLF_HTTP_PORT=3000
+export DISCORD_WEREWOLF_SYSTEM_GM="MEMBER_ID_1 MEMBER_ID_2"
+```
 
-✅ Test it worked:
-`echo $DISCORD_WEREWOLF_BOT_TOKEN_1`
-You should see your token printed back.
+Then apply changes:
 
+```bash
+source ~/.bashrc
+```
 
+✅ Verify:
 
-add custom tcp 3000 rule to IPv4 Firewall (Networking)
+```bash
+echo $DISCORD_WEREWOLF_BOT_TOKEN_1
+```
 
+---
 
-# Compile to JS
-`npx tsc`
+## 🔓 Open Port 3000 on IPv4 Firewall
 
-`sudo npm install -g pm2`
+> Go to **AWS Console > EC2 > Security Groups > Inbound Rules**  
+> Add **Custom TCP Rule**:  
+> - Port: `3000`  
+> - Source: `0.0.0.0/0` or your IP
 
-# Run app
-`pm2 start build/index.js --name werewolf`
+---
+
+## 🔧 Compile to JavaScript
+
+```bash
+npx tsc
+```
+
+---
+
+## 🚀 Install and Use PM2 (Recommended)
+
+```bash
+sudo npm install -g pm2
+```
+
+Run the bot:
+
+```bash
+pm2 start build/index.js --name werewolf
+```
+
+To save the process on reboot:
+
+```bash
+pm2 save
+pm2 startup
+```
+
+Follow the printed instructions (usually copy-paste the command provided).
+
+---
