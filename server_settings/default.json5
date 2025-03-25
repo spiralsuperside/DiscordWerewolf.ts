@@ -32,7 +32,7 @@
   },
 
   music :{
-    opening     : "./media/BGMs/opening.mp3"",
+    opening     : "./media/BGMs/opening.mp3",
     first_night : "./media/BGMs/first_night.wav",
     day_time    : "./media/BGMs/day.mp3",
     vote        : "./media/BGMs/vote.mp3",
