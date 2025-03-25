@@ -591,8 +591,8 @@ export default class GameState {
         switch (this.phase) {
             case Phase.p0_UnStarted:
             case Phase.p1_Wanted:
-                // Replace @everyone with eligible_role_ids
-                eligible_role_ids.forEach(roleId => {
+                // Replace @everyone with allowedRoles
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.RW, permLiving);
                     addPerm(roleId, Perm.RW, permLivingVoice);
                     addPerm(roleId, Perm.ReadOnly, permDead);
@@ -602,8 +602,8 @@ export default class GameState {
                 break;
 
             case Phase.p1_Wanted:
-                // For p0_UnStarted and p1_Wanted, replace @everyone with eligible roles.
-                eligible_role_ids.forEach(roleId => {
+                // For p0_UnStarted and p1_Wanted, replace @everyone with allowedRoles
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.RW, permLiving);
                     addPerm(roleId, Perm.RW, permLivingVoice);
                     addPerm(roleId, Perm.ReadOnly, permDead);
@@ -614,7 +614,7 @@ export default class GameState {
 
             case Phase.p2_Preparation:
                 // Guest default permissions for Preparation
-                eligible_role_ids.forEach(roleId => {
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.NoAccess, permWerewolf);
                     addPerm(roleId, Perm.ReadOnly, permLiving);
                     addPerm(roleId, Perm.ReadOnly, permLivingVoice);
@@ -636,7 +636,7 @@ export default class GameState {
                 break;
 
             case Phase.p3_FirstNight:
-                eligible_role_ids.forEach(roleId => {
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.NoAccess, permWerewolf);
                     addPerm(roleId, Perm.ReadOnly, permLiving);
                     addPerm(roleId, Perm.ReadOnly, permLivingVoice);
@@ -657,7 +657,7 @@ export default class GameState {
                 break;
 
             case Phase.p4_Daytime:
-                eligible_role_ids.forEach(roleId => {
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.NoAccess, permWerewolf);
                     addPerm(roleId, Perm.ReadOnly, permLiving);
                     addPerm(roleId, Perm.ReadOnly, permLivingVoice);
@@ -691,7 +691,7 @@ export default class GameState {
                 break;
 
             case Phase.p5_Vote:
-                eligible_role_ids.forEach(roleId => {
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.NoAccess, permWerewolf);
                     addPerm(roleId, Perm.ReadOnly, permLiving);
                     addPerm(roleId, Perm.ReadOnly, permLivingVoice);
@@ -724,7 +724,7 @@ export default class GameState {
                 break;
 
             case Phase.p6_Night:
-                eligible_role_ids.forEach(roleId => {
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.NoAccess, permWerewolf);
                     addPerm(roleId, Perm.ReadOnly, permLiving);
                     addPerm(roleId, Perm.ReadOnly, permLivingVoice);
@@ -756,7 +756,7 @@ export default class GameState {
                 break;
 
             case Phase.p7_GameEnd:
-                eligible_role_ids.forEach(roleId => {
+                allowedRoles.forEach(roleId => {
                     addPerm(roleId, Perm.ReadOnly, permWerewolf);
                     addPerm(roleId, Perm.RW, permLiving);
                     addPerm(roleId, Perm.RW, permLivingVoice);
