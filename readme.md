@@ -58,6 +58,13 @@ sudo mkswap  /swapfile
 sudo swapon /swapfile
 ```
 
+DELETE
+
+```bash
+sudo swapoff /swapfile
+sudo rm /swapfile
+```
+
 ---
 
 ## 📦 Install App Dependencies
