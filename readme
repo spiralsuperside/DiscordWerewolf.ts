@@ -38,6 +38,31 @@ DISCORD_WEREWOLF_HTTP_IP= Ubuntu Server IP
 DISCORD_WEREWOLF_HTTP_PORT=3000
 DISCORD_WEREWOLF_SYSTEM_GM="MEMBER_ID_1 MEMBER_ID_2"
 
+🛠 If You're Using Bash (.bashrc)
+To permanently set your environment variable for your bot:
+
+Open your .bashrc file:
+
+`nano ~/.bashrc`
+Scroll to the bottom and add the following line (replace with your actual token):
+
+`export DISCORD_WEREWOLF_BOT_TOKEN_1=your_real_token_here`
+
+Save and exit the file:
+
+Press Ctrl + O, then Enter to save
+Press Ctrl + X to exit
+
+Apply the changes to your current shell session:
+
+`source ~/.bashrc`
+
+✅ Test it worked:
+`echo $DISCORD_WEREWOLF_BOT_TOKEN_1`
+You should see your token printed back.
+
+
+
 add custom tcp 3000 rule to IPv4 Firewall (Networking)
 
 
